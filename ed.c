@@ -32,7 +32,7 @@
 #define _BOSYED_LICENSE(li)
 #endif // _BOSYED_LICENSE
 
-_BOSYED_LICENSE("BOSYEd TBD released under CC0+MIT.") // TODO: replace it before production
+_BOSYED_LICENSE("BOSYEd is released under CC0+MIT.")
 
 typedef struct BOSYEdLines {
   struct BOSYEdLines *next;
@@ -251,6 +251,10 @@ int main(int argc, char **argv) {
   int count;
   while (fgets(buf, 511, stdin)) {
     buf[strlen(buf)-1] = 0;
+    if (!strcmp(buf, "?")) {
+      printf("Commands:\n? - List\nw - write\nq - quit\n! - run system command\na - append to end\ne - extend after line\nd - delete line\n, - show all lines or one\n. - list line range\n");
+      continue;
+    }
     if (buf[0] == 'w') {
       if (!buf[1]) fprintf(stderr, "Usage: w<file path>\n");
       else {
@@ -276,4 +280,4 @@ int main(int argc, char **argv) {
   }
   return 0;
 }
-#endif // 1
+#endif // 1!

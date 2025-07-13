@@ -1,2 +1,2 @@
 #!/bin/sh
-rlwrap ./ed "$@"
+rlwrap ~/.local/bin/bosedr "$@"
