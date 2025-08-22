@@ -13,7 +13,7 @@
 #endif // _BOSYED_MALLOC
 
 #ifndef _BOSYED_MEMCPY
-#define _BOSYED_MEMCPY __builtin_memcpy
+#define _BOSYED_MEMCPY memcpy
 #endif // _BOSYED_MEMCPY
 
 #ifndef _BOSYED_FREE
@@ -115,6 +115,9 @@ BOSYEdState BOSYEdProccess(BOSYEdState state, const char *cmd) {
     while (curr) {
       if (line != -1) {
 	if (curr->id == line) {
+        printf("%d\t\t|", curr->id);
+        for (unsigned long i = 0; curr->line[i]; ++i) printf("%c", '0'+(i%10));
+        printf("\n");
           printf("%d\t\t|%s\n", curr->id, curr->line);
 	  break;
 	}
@@ -197,6 +200,56 @@ printf("%d\t\t|%s\n", curr->id, curr->line);
     }
     break;
   }
+  case 'i': {
+    int lower = 1;
+    for (lower = 1; cmd[lower] != ' '; ++lower);
+    long line = BOSYEdAtoiN(cmd + 1, lower - 1);
+    ++lower;
+    int slower = lower;
+    for (; cmd[lower] != ' '; ++lower);
+    long col = BOSYEdAtoiN(cmd + slower, lower - slower + 1);
+    const char *text = cmd + lower + 1;
+    BOSYEdLines *curr = state.lines;
+    int adding = 0;
+    while (curr) {
+      if (curr->id == line) {
+	int tsize = _BOSYED_STRLEN(text);
+	int size = tsize + _BOSYED_STRLEN(curr->line);
+	char *new = _BOSYED_MALLOC(size+1);
+	_BOSYED_MEMCPY(new, curr->line, col);
+	_BOSYED_MEMCPY(new+col, text, tsize);
+	_BOSYED_MEMCPY(new+col+tsize, curr->line+col, size-tsize-col+1);
+	_BOSYED_FREE(curr->line);
+	curr->line = new;
+	break;
+      }
+    }
+    break;
+  }
+  case 'r': {
+    int lower = 1;
+    for (lower = 1; cmd[lower] != ' '; ++lower);
+    long line = BOSYEdAtoiN(cmd + 1, lower - 1);
+    ++lower;
+    int slower = lower;
+    for (; cmd[lower] != ' '; ++lower);
+    long col = BOSYEdAtoiN(cmd + slower, lower - slower + 1);
+    long amount = BOSYEdAtoi(cmd + lower + 1);
+    BOSYEdLines *curr = state.lines;
+    int adding = 0;
+    while (curr) {
+      if (curr->id == line) {
+	int size = amount + _BOSYED_STRLEN(curr->line);
+	char *new = _BOSYED_MALLOC(size+1);
+	_BOSYED_MEMCPY(new, curr->line, col);
+	_BOSYED_MEMCPY(new+col+amount, curr->line+col, size-amount-col+1);
+	_BOSYED_FREE(curr->line);
+	curr->line = new;
+	break;
+      }
+    }
+    break;
+  }
   case 'd': {
     int line = BOSYEdAtoi(cmd + 1);
     BOSYEdLines *prev = 0;
@@ -206,12 +259,12 @@ printf("%d\t\t|%s\n", curr->id, curr->line);
       if (curr->id == line) {
 	if (prev) {
 	  prev->next = curr->next;
-	  free(curr);
+	  _BOSYED_FREE(curr);
 	  curr = prev->next;
 	}
 	else {
 	  state.lines = curr->next;
-	  free(curr);
+	  _BOSYED_FREE(curr);
 	  curr = state.lines;
 	}
 	subing = 1;
@@ -252,7 +305,7 @@ int main(int argc, char **argv) {
   while (fgets(buf, 511, stdin)) {
     buf[strlen(buf)-1] = 0;
     if (!strcmp(buf, "?")) {
-      printf("Commands:\n? - List\nw - write\nq - quit\n! - run system command\na - append to end\ne - extend after line\nd - delete line\n, - show all lines or one\n. - list line range\n");
+      printf("Commands:\n? - List\nw<FILENAME> - write\nq - quit\n!<CMD> - run system command\na<TEXT> - append to end\ne<LINE> <TEXT> - extend after line\nd<LINE> - delete line\n,[LINE] - show all lines or one\n.<FROM> <TO> - list line range\ni<LINE> <COL> <TEXT> - insert text at line after col\nr<LINE> <START> <SIZE> - eRase <SIZE> bytes from index <START> at line <LINE>\n");
       continue;
     }
     if (buf[0] == 'w') {
