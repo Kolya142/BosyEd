@@ -223,6 +223,7 @@ printf("%d\t\t|%s\n", curr->id, curr->line);
 	curr->line = new;
 	break;
       }
+      curr = curr->next;
     }
     break;
   }
@@ -239,14 +240,15 @@ printf("%d\t\t|%s\n", curr->id, curr->line);
     int adding = 0;
     while (curr) {
       if (curr->id == line) {
-	int size = amount + _BOSYED_STRLEN(curr->line);
+	int size = _BOSYED_STRLEN(curr->line) - amount;
 	char *new = _BOSYED_MALLOC(size+1);
 	_BOSYED_MEMCPY(new, curr->line, col);
-	_BOSYED_MEMCPY(new+col+amount, curr->line+col, size-amount-col+1);
+	_BOSYED_MEMCPY(new+col, curr->line+col, size-amount-col+1);
 	_BOSYED_FREE(curr->line);
 	curr->line = new;
 	break;
       }
+      curr = curr->next;
     }
     break;
   }
